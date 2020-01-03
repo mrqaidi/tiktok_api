@@ -1,2 +1,3 @@
-# TikTok
-TikTok API
+# TikTok API
+
+Expect API soon :smile:
