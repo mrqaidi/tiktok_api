@@ -1,0 +1,51 @@
+{
+    "name": "tiktok",
+    "description": "TikTok API",
+    "license": [
+        "RPL-1.5",
+        "proprietary"
+    ],
+    "keywords": [
+        "TikTok",
+        "Private",
+        "API",
+        "PHP"
+    ],
+    "authors": [
+        {
+            "name": "mgp25",
+            "email": "me@mgp25.com",
+            "role": "Founder"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "TikTokAPI\\": "src/"
+        }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.8.0"
+    },
+    "require": {
+        "php": ">=5.6",
+        "lazyjsonmapper/lazyjsonmapper": "^1.6.1",
+        "guzzlehttp/guzzle": "^6.2",
+        "ext-curl": "*",
+        "ext-mbstring": "*",
+        "ext-gd": "*",
+        "ext-exif": "*",
+        "ext-zlib": "*",
+        "ext-bcmath": "*",
+        "ramsey/uuid": "^3.8.0"
+    },
+    "scripts": {
+        "codestyle": [
+            "lazydoctor -c composer.json -pfo",
+            "php-cs-fixer fix --config=.php_cs.dist --allow-risky yes",
+            "php devtools/checkStyle.php x"
+        ],
+        "test": [
+            "phpunit tests"
+        ]
+    }
+}
