@@ -60,4 +60,9 @@ class Settings
             return null;
         }
     }
+
+    public function getUsernameStoragePath()
+    {
+        return $this->userStorage;
+    }
 }
