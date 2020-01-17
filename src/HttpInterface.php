@@ -6,23 +6,35 @@ use Ramsey\Uuid\Uuid;
 
 class HttpInterface
 {
-    public $parent;
-    public $debug;
-    public $TikTokAPIHeaders;
+    protected $_parent;
+    protected $headers;
 
     public function __construct(
-        $parent,
-        $debug)
+        $parent)
     {
-        $this->curl = curl_init();
-        $this->parent = $parent;
-        $this->debug = $debug;
-        $this->TikTokAPIHeaders = $this->getTikTokAPIHeaders();
+        $this->_parent = $parent;
     }
 
-    public function buildTikTokUserAgent()
+    protected function getUserAgent()
     {
-        return sprintf('TikTok %s rv:%s (iPhone; iOS %s; %s) Cronet', Constants::TIKTOK_VERSION, Constants::IOS_VERSION, Constants::BUILD_VERSION, Constants::LOCALE);
+        return 'okhttp/3.10.0.1';
+    }
+
+    protected function getGorgonAndKronosHeaders(
+        $request)
+    {
+        $result = $this->_parent->request()
+            ->setBase(2)
+            ->skip(true)
+            ->setDisableDefaultParams(true)
+            ->setEncoding('json')
+            ->addPost('url', $request->getUrl())
+            ->addPost('query', http_build_query($request->getParams()))
+            ->addPost('headers', $request->getHeaders(true))
+            ->getResponse();
+
+        $request->addHeader('X-Gorgon', $result['X-Gorgon']);
+        $request->addHeader('X-Khronos', $result['X-Khronos']);
     }
 
     public function setTikTokToken(
@@ -31,62 +43,43 @@ class HttpInterface
         $this->TikTokAPIHeaders[] = 'x-Tt-Token: '.$token;
     }
 
-    public function getTikTokAPIHeaders()
-    {
-        return [
-            'User-Agent: '.$this->buildTikTokUserAgent(),
-            'sdk-version: 1',
-            'Accept-Encoding: gzip, deflate',
-            'X-Khronos: 0',
-            'X-Gorgon: 0',
-        ];
-    }
-
     public function sendRequest(
-        $host,
-        $method,
-        $endpoint,
-        $params = null,
-        $encoding = null)
+        $request,
+        $skip = false)
     {
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->TikTokAPIHeaders);
-        if ($method === 'post') {
-            curl_setopt($this->curl, CURLOPT_URL, $host.$endpoint);
-            curl_setopt($this->curl, CURLOPT_POST, true);
-            if ($encoding === 'json') {
-                $params = json_encode($params);
-                curl_setopt($this->curl, CURLOPT_HTTPHEADER, array_merge($this->TikTokAPIHeaders, ['Content-Type: application/json']));
-            } elseif ($encoding === 'multipart') {
-                $params = $this->buildMultiPart($params['fields'], $params['medias']);
-            }
-            curl_setopt($this->curl, CURLOPT_POSTFIELDS, $params);
-        } elseif ($method === 'get') {
-            curl_setopt($this->curl, CURLOPT_POST, false);
-            if ($params !== null) {
-                curl_setopt($this->curl, CURLOPT_URL, $host.$endpoint.'?'.http_build_query($params));
-            } else {
-                curl_setopt($this->curl, CURLOPT_URL, $host.$endpoint);
-            }
-        } elseif ($method === 'fpost') {
-            if ($params != null) {
-                curl_setopt($this->curl, CURLOPT_URL, $host.$endpoint.'?'.http_build_query($params));
-            } else {
-                curl_setopt($this->curl, CURLOPT_URL, $host.$endpoint);
-            }
-            curl_setopt($this->curl, CURLOPT_POST, true);
-        } elseif ($method === 'delete') {
-            curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        $ch = curl_init();
+        if ($request->getPosts() !== null && !$request->getSkip()) {
+            $request->addHeader('Cookies', 'store-idc=maliva; store-country-code=us');
+            $request->addHeader('X-SS-STUB', strtoupper(md5(http_build_query($request->getPosts()))));
+            $this->getGorgonAndKronosHeaders($request);
+            curl_setopt($ch, CURLOPT_URL, $request->getUrl() . '?' . urldecode(http_build_query($request->getParams())));
+        } else {
+            curl_setopt($ch, CURLOPT_URL, $request->getUrl());
         }
-        curl_setopt($this->curl, CURLOPT_ENCODING, 'gzip,deflate');
-        curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
 
-        $response = curl_exec($this->curl);
-        curl_setopt($this->curl, CURLOPT_HEADER, 0);
+        if ($request->getPosts() !== null) {
+            if ($request->getEncoding() === 'json') {
+                $request->addHeader('Content-Type', 'application/json');
+            } else {
+                $request->addHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            }
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $request->getHeaders());
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getBody());
+        }
 
-        if ($this->debug === true) {
-            $this->debug($method, $endpoint, $params, $response);
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        //curl_setopt($ch, CURLOPT_COOKIEJAR, '');
+        //curl_setopt($ch, CURLOPT_COOKIEFILE, '');
+        curl_setopt($ch, CURLOPT_VERBOSE, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        if ($this->_parent->debug === true) {
+            $this->debug($request, $response);
         }
 
         return json_decode($response, true);
@@ -100,7 +93,7 @@ class HttpInterface
         $eol = "\r\n";
 
         $delimiter = 'Boundary-'.Uuid::uuid4();
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array_merge($this->TikTokAPIHeaders, ['Content-Type: multipart/form-data; boundary='.$delimiter]));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge($this->TikTokAPIHeaders, ['Content-Type: multipart/form-data; boundary='.$delimiter]));
 
         foreach ($fields as $name => $content) {
             $data .= '--'.$delimiter.$eol
@@ -125,20 +118,18 @@ class HttpInterface
     }
 
     public function debug(
-        $method,
-        $endpoint,
-        $payload,
+        $request,
         $response)
     {
-        echo "\033[1;33;m".strtoupper($method).": \033[0m".$endpoint."\n";
-        if (is_array($payload)) {
-            echo "\033[1;35;mDATA: \033[0m".http_build_query($payload)."\n";
-        } elseif (!is_string($payload) && $payload !== null) {
-            echo "\033[1;35;mDATA: \033[0m".$payload."\n";
+        $method = $request->getPosts() === null ? 'GET' : 'POST';
+        if ($request->getParams() !== null) {
+            echo "\033[1;33;m".strtoupper($method).": \033[0m". $request->getUrl() . '?' . urldecode(http_build_query($request->getParams())) ."\n";
         } else {
-            if (strlen($payload) !== 0) {
-                echo "\033[1;35;mDATA: \033[0m".strlen($payload)." bytes\n";
-            }
+            echo "\033[1;33;m".strtoupper($method).": \033[0m". $request->getUrl()."\n";
+        }
+
+        if ($request->getPosts() !== null) {
+            echo "\033[1;35;mDATA: \033[0m".$request->getBody()."\n";
         }
         echo "\033[1;32;mRESPONSE: \033[0m".$response."\n\n";
     }
