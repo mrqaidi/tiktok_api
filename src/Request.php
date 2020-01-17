@@ -87,8 +87,7 @@ class Request
         $this
         ->addParam('account_sdk_version', 380)
         ->addParam('manifest_version_code', 2021404110)
-        ->addParam('_rticket', round(microtime(true)*1000))
-        ->addParam('current_region', 'ES')
+        ->addParam('_rticket', round(microtime(true)*1000) +1000)
         ->addParam('app_language', 'en')
         ->addParam('app_type', 'normal')
         ->addParam('iid', $this->_parent->settings->get('iid'))
@@ -106,7 +105,6 @@ class Request
         ->addParam('is_my_cn', 0)
         ->addParam('timezone_name', 'GMT')
         ->addParam('dpi', '560')
-        ->addParam('residence', 'US')
         ->addParam('carrier_region', 'US')
         ->addParam('ac', 'wifi')
         ->addParam('device_id', $this->_parent->settings->get('device_id'))
@@ -125,7 +123,7 @@ class Request
         ->addParam('device_platform', 'android')
         ->addParam('build_number', '14.4.11')
         ->addParam('region', 'US')
-        ->addParam('aid', '1223')
+        ->addParam('aid', '1233')
         ->addParam('ts', time());
     }
 
