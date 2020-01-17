@@ -15,11 +15,6 @@ class HttpInterface
         $this->_parent = $parent;
     }
 
-    protected function getUserAgent()
-    {
-        return 'okhttp/3.10.0.1';
-    }
-
     protected function getGorgonAndKronosHeaders(
         $request)
     {
@@ -27,7 +22,6 @@ class HttpInterface
             ->setBase(2)
             ->skip(true)
             ->setDisableDefaultParams(true)
-            ->setEncoding('json')
             ->addPost('url', $request->getUrl())
             ->addPost('query', http_build_query($request->getParams()))
             ->addPost('headers', $request->getHeaders(true))
