@@ -9,8 +9,9 @@ I am still thinking how to deliver Gorgon and device registration algorithm so n
 The following is currently available for researching and development:
 
 - Device registration for registering `device_id`, `install_id` also known as `iid` and `openudid`.
+- `X-Gorgon` and `X-Khronos`.
 
-ETA for the full API depends on how long it takes me to perfectly implement all algorithms.
+Full API will be ready between 21-27 Jan.
 
 If you want to contact with me: me [ at ] mgp25 [ dot ] com
 
