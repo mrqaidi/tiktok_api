@@ -23,7 +23,7 @@ class HttpInterface
             ->skip(true)
             ->setDisableDefaultParams(true)
             ->addPost('url', $request->getUrl())
-            ->addPost('query', http_build_query($request->getParams()))
+            ->addPost('query', urldecode(http_build_query($request->getParams())))
             ->addPost('headers', $request->getHeaders(true))
             ->getResponse();
 
