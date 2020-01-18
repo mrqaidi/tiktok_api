@@ -84,10 +84,11 @@ class Request
 
     public function addDefaultParams()
     {
+        $timestamp = round(microtime(true)*1000);
         $this
         ->addParam('account_sdk_version', Constants::SDK_VERSION)
         ->addParam('manifest_version_code', Constants::VERSION_CODE)
-        ->addParam('_rticket', round(microtime(true)*1000) +1000)
+        ->addParam('_rticket', $timestamp)
         ->addParam('app_language', Constants::LANGUAGE)
         ->addParam('app_type', Constants::APP_TYPE)
         ->addParam('iid', $this->_parent->settings->get('iid'))
@@ -124,7 +125,7 @@ class Request
         ->addParam('build_number', Constants::TIKTOK_VERSION)
         ->addParam('region', Constants::REGION)
         ->addParam('aid', '1233')
-        ->addParam('ts', time());
+        ->addParam('ts', substr($timestamp, 0, -3));
     }
 
     public function addHeader(
