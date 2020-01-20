@@ -44,6 +44,34 @@ class TikTok
         return new Response\LoginResponse($response);
     }
 
+    public function like(
+        $mediaId)
+    {
+        $response = $this->request('/aweme/v1/commit/item/digg/')
+            ->setBase(1)
+            ->addParam('aweme_id', $mediaId)
+            ->addParam('type', 1)
+            ->getResponse();
+
+        return new Response\LikeResponse($response);
+    }
+
+    public function follow(
+        $itemId,
+        $secUserId)
+    {
+        $response = $this->request('/aweme/v1/commit/follow/user')
+            ->setBase(1)
+            ->addParam('item_id', $itemId)
+            ->addParam('sec_user_id', $secUserId)
+            ->addParam('from', '13') // needs logic yet.
+            ->addParam('from_pre', '-1')
+            ->addParam('type', 1)
+            ->getResponse();
+
+        return new Response\FollowResponse($response);
+    }
+
     /**
      * Create a custom API request.
      *
