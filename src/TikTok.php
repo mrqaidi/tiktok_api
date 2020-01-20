@@ -2,6 +2,8 @@
 
 namespace TikTokAPI;
 
+use Ramsey\Uuid\Uuid;
+
 class TikTok
 {
     public $debug;
@@ -16,18 +18,28 @@ class TikTok
         $this->settings = new Settings($storagePath);
     }
 
-    public function loginWithEmail(
-        $email,
-        $password,
+    protected function _setUser(
+        $user,
         $deviceInfo)
     {
-        $this->settings->setUser($email);
+        $this->settings->setUser($user);
 
-        if ($this->settings->get('openudid') === null) {
+        if ($this->settings->get('openudid') === null ||
+            $this->settings->get('iid') === null ||
+            $this->settings->get('device_id') === null) {
             $this->settings->set('openudid', $deviceInfo['openudid']);
             $this->settings->set('iid', $deviceInfo['iid']);
             $this->settings->set('device_id', $deviceInfo['device_id']);
         }
+    }
+
+    public function loginWithEmail(
+        $email,
+        $user,
+        $password,
+        $deviceInfo)
+    {
+        $this->_setUser($user, $deviceInfo);
 
         $response = $this->request('/passport/user/login/')
             ->setBase(1)
