@@ -10,6 +10,7 @@ The following is currently available for researchers and developers:
 
 - Device registration for registering `device_id`, `install_id` also known as `iid` and `openudid`.
 - `X-Gorgon` and `X-Khronos`.
+- Captcha solver
 
 Full API will be ready between 21-27 Jan.
 
