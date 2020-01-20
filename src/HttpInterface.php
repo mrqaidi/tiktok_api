@@ -41,9 +41,11 @@ class HttpInterface
         $skip = false)
     {
         $ch = curl_init();
-        if ($request->getPosts() !== null && !$request->getSkip()) {
+        if (!$request->getSkip()) {
             $request->addHeader('Cookies', 'store-idc=maliva; store-country-code=us');
-            $request->addHeader('X-SS-STUB', strtoupper(md5(http_build_query($request->getPosts()))));
+            if ($request->getPosts() !== null) {
+                $request->addHeader('X-SS-STUB', strtoupper(md5(http_build_query($request->getPosts()))));
+            }
             $this->_getGorgonAndKronosHeaders($request);
             curl_setopt($ch, CURLOPT_URL, $request->getUrl().'?'.urldecode(http_build_query($request->getParams())));
         } else {
@@ -65,9 +67,8 @@ class HttpInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        //curl_setopt($ch, CURLOPT_COOKIEJAR, '');
-        //curl_setopt($ch, CURLOPT_COOKIEFILE, '');
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
         $response = curl_exec($ch);
         curl_close($ch);
 
