@@ -24,7 +24,12 @@ class HttpInterface
             ->addPost('url', $request->getUrl())
             ->addPost('query', urldecode(http_build_query($request->getParams())))
             ->addPost('headers', $request->getHeaders(true))
+            ->addPost('authkey', $this->_parent->authKey)
             ->getResponse();
+
+        if (isset($result['status'])) {
+            throw new AuthkeyException("Missing or invalid auth key.");
+        }
 
         $request->addHeader('X-Gorgon', $result['X-Gorgon']);
         $request->addHeader('X-Khronos', $result['X-Khronos']);
@@ -42,7 +47,9 @@ class HttpInterface
     {
         $ch = curl_init();
         if (!$request->getSkip()) {
-            $request->addHeader('Cookies', $this->_getCookieString());
+            if (file_exists($this->_parent->settings->getUsernameStoragePath() . '/cookies.dat')) {
+                $request->addHeader('Cookies', $this->_getCookieString());
+            }
             if ($request->getPosts() !== null) {
                 $request->addHeader('X-SS-STUB', strtoupper(md5(http_build_query($request->getPosts()))));
             }
@@ -71,8 +78,8 @@ class HttpInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
+        @curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
+        @curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
         //curl_setopt($ch, CURLOPT_VERBOSE, true);
         $response = curl_exec($ch);
         curl_close($ch);
