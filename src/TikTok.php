@@ -2,8 +2,6 @@
 
 namespace TikTokAPI;
 
-use Ramsey\Uuid\Uuid;
-
 class TikTok
 {
     public $debug;
@@ -90,6 +88,27 @@ class TikTok
             ->getResponse();
 
         return new Response\CommentResponse($response);
+    }
+
+    public function search(
+        $query,
+        $offset = 0,
+        $count = 10)
+    {
+        $response = $this->request('/aweme/v1/general/search/single/')
+            ->setBase(1)
+            ->addPost('keyword', $query)
+            ->addPost('offset', $offset)
+            ->addPost('count', $count)
+            ->addPost('is_pull_refresh', 1)
+            ->addPost('search_source', 'search_sug')
+            ->addPost('hot_search', 0)
+            ->addPost('latitude', '0.0')
+            ->addPost('longitude', '0.0')
+            ->addPost('query_correct_type', 1)
+            ->getResponse();
+
+        return new Response\SearchResponse($response);
     }
 
     /**
