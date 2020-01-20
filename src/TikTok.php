@@ -60,7 +60,7 @@ class TikTok
         $itemId,
         $secUserId)
     {
-        $response = $this->request('/aweme/v1/commit/follow/user')
+        $response = $this->request('/aweme/v1/commit/follow/user/')
             ->setBase(1)
             ->addParam('item_id', $itemId)
             ->addParam('sec_user_id', $secUserId)
@@ -70,6 +70,26 @@ class TikTok
             ->getResponse();
 
         return new Response\FollowResponse($response);
+    }
+
+    public function comment(
+        $mediaId,
+        $text)
+    {
+        $response = $this->request('/aweme/v1/comment/publish/')
+            ->setBase(1)
+            ->addPost('aweme_id', $mediaId)
+            ->addPost('text', $text)
+            ->addPost('is_self_see', 0)
+            ->addPost('sticker_id', '')
+            ->addPost('sticker_source', 0)
+            ->addPost('sticker_width', 0)
+            ->addPost('sticker_height', 0)
+            ->addPost('channel_id', 0)
+            ->addPost('city', '')
+            ->getResponse();
+
+        return new Response\CommentResponse($response);
     }
 
     /**
