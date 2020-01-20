@@ -169,7 +169,11 @@ class Request
 
     public function getUrl()
     {
-        return Constants::TIKTOK_API[$this->_base].$this->_endpoint;
+        if ($this->_base === 100) {
+            return Constants::DEVICE_REGISTRATION[array_rand(Constants::DEVICE_REGISTRATION)]. $this->_endpoint;
+        } else {
+            return Constants::TIKTOK_API[$this->_base].$this->_endpoint;
+        }
     }
 
     public function setEncoding(
