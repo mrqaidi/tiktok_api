@@ -18,7 +18,7 @@ class TikTok
         $this->settings = new Settings($storagePath);
     }
 
-    protected function _setUser(
+    public function setUser(
         $user,
         $deviceInfo)
     {
@@ -39,7 +39,7 @@ class TikTok
         $password,
         $deviceInfo)
     {
-        $this->_setUser($user, $deviceInfo);
+        $this->setUser($user, $deviceInfo);
 
         $response = $this->request('/passport/user/login/')
             ->setBase(1)
