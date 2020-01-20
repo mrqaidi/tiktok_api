@@ -6,7 +6,7 @@ I am still thinking how to deliver Gorgon and device registration algorithm so n
 
 ### Currently available
 
-The following is currently available for researching and development:
+The following is currently available for researchers and developers:
 
 - Device registration for registering `device_id`, `install_id` also known as `iid` and `openudid`.
 - `X-Gorgon` and `X-Khronos`.
