@@ -42,7 +42,7 @@ class HttpInterface
     {
         $ch = curl_init();
         if (!$request->getSkip()) {
-            $request->addHeader('Cookies', 'store-idc=maliva; store-country-code=us');
+            $request->addHeader('Cookies', $this->_getCookieString());
             if ($request->getPosts() !== null) {
                 $request->addHeader('X-SS-STUB', strtoupper(md5(http_build_query($request->getPosts()))));
             }
@@ -69,6 +69,7 @@ class HttpInterface
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
+        //curl_setopt($ch, CURLOPT_VERBOSE, true);
         $response = curl_exec($ch);
         curl_close($ch);
 
@@ -109,6 +110,55 @@ class HttpInterface
         $data .= '--'.$delimiter.'--'.$eol;
 
         return $data;
+    }
+
+    protected function _getCookieString()
+    {
+
+        $lines = explode(PHP_EOL, file_get_contents($this->_parent->settings->getUsernameStoragePath() . '/cookies.dat'));
+
+        $cookieString = '';
+        foreach ($lines as $line) {
+
+            $cookie = array();
+
+            // detect httponly cookies and remove #HttpOnly prefix
+            if (substr($line, 0, 10) == '#HttpOnly_') {
+                $line = substr($line, 10);
+                $cookie['httponly'] = true;
+            } else {
+                $cookie['httponly'] = false;
+            }
+
+            // we only care for valid cookie def lines
+            if( strlen( $line ) > 0 && $line[0] != '#' && substr_count($line, "\t") == 6) {
+
+                // get tokens in an array
+                $tokens = explode("\t", $line);
+
+                // trim the tokens
+                $tokens = array_map('trim', $tokens);
+
+                // Extract the data
+                $cookie['domain'] = $tokens[0]; // The domain that created AND can read the variable.
+                $cookie['flag'] = $tokens[1];   // A TRUE/FALSE value indicating if all machines within a given domain can access the variable.
+                $cookie['path'] = $tokens[2];   // The path within the domain that the variable is valid for.
+                $cookie['secure'] = $tokens[3]; // A TRUE/FALSE value indicating if a secure connection with the domain is needed to access the variable.
+
+                $cookie['expiration-epoch'] = $tokens[4];  // The UNIX time that the variable will expire on.
+                $cookie['name'] = urldecode($tokens[5]);   // The name of the variable.
+                $cookie['value'] = urldecode($tokens[6]);  // The value of the variable.
+
+                // Convert date to a readable format
+                $cookie['expiration'] = date('Y-m-d h:i:s', $tokens[4]);
+
+                // Record the cookie.
+                $cookies[] = $cookie;
+                $cookieString .= $cookie['name'].'='.$cookie['value'].'; ';
+            }
+        }
+
+        return trim($cookieString, '; ');
     }
 
     public function debug(
