@@ -49,7 +49,11 @@ class HttpInterface
             $this->_getGorgonAndKronosHeaders($request);
             curl_setopt($ch, CURLOPT_URL, $request->getUrl().'?'.urldecode(http_build_query($request->getParams())));
         } else {
-            curl_setopt($ch, CURLOPT_URL, $request->getUrl());
+            if ($request->getParams() !== null) {
+                curl_setopt($ch, CURLOPT_URL, $request->getUrl().'?'.urldecode(http_build_query($request->getParams())));
+            } else {
+                curl_setopt($ch, CURLOPT_URL, $request->getUrl());
+            }
         }
 
         if ($request->getPosts() !== null) {
