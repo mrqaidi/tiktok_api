@@ -9,6 +9,7 @@ class TikTok
     public $debug;
     public $storagePath;
     public $settings;
+    public $authKey = '';
 
     public function __construct(
         $debug = false,
@@ -18,19 +19,41 @@ class TikTok
         $this->settings = new Settings($storagePath);
     }
 
+    public function setAuthKey(
+        $authKey)
+    {
+        $this->authKey = $authKey;
+    }
+
     public function setUser(
         $user,
-        $deviceInfo)
+        $deviceInfo = null)
     {
         $this->settings->setUser($user);
 
-        if ($this->settings->get('openudid') === null ||
-            $this->settings->get('iid') === null ||
-            $this->settings->get('device_id') === null) {
-            $this->settings->set('openudid', $deviceInfo['openudid']);
-            $this->settings->set('iid', $deviceInfo['iid']);
-            $this->settings->set('device_id', $deviceInfo['device_id']);
+        if ($this->settings->get('openudid') === null || $this->settings->get('iid') === null || $this->settings->get('device_id') === null) {
+            if ($deviceInfo === null) {
+                $deviceInfo = $this->getDeviceRegistrationIds();
+                $this->settings->set('openudid', $deviceInfo->getOpenudid());
+                $this->settings->set('iid', $deviceInfo->getInstallId());
+                $this->settings->set('device_id', $deviceInfo->getDeviceId());
+            } else {
+                $this->settings->set('openudid', $deviceInfo['openudid']);
+                $this->settings->set('iid', $deviceInfo['iid']);
+                $this->settings->set('device_id', $deviceInfo['device_id']);
+            }
         }
+    }
+
+    public function getDeviceRegistrationIds()
+    {
+        $response = $this->request('/devices')
+            ->skip(true)
+            ->setBase(100)
+            ->setDisableDefaultParams(true)
+            ->getResponse();
+
+        return new Response\DeviceRegistrationIdsResponse($response);
     }
 
     public function getCaptcha(
@@ -58,7 +81,7 @@ class TikTok
         $email,
         $user,
         $password,
-        $deviceInfo)
+        $deviceInfo = null)
     {
         $this->setUser($user, $deviceInfo);
 
