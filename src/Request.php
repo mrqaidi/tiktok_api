@@ -2,10 +2,8 @@
 
 namespace TikTokAPI;
 
-
 class Request
 {
-
     protected $_parent = null;
     protected $_http = null;
     protected $_url = null;
@@ -28,6 +26,7 @@ class Request
         $this->_endpoint = $endpoint;
         $this->addBasicHeaders();
     }
+
     /**
      * Add query param to request, overwriting any previous value.
      *
@@ -84,7 +83,7 @@ class Request
 
     public function addDefaultParams()
     {
-        $timestamp = round(microtime(true)*1000);
+        $timestamp = round(microtime(true) * 1000);
         $this
         ->addParam('account_sdk_version', Constants::SDK_VERSION)
         ->addParam('manifest_version_code', Constants::VERSION_CODE)
@@ -153,6 +152,7 @@ class Request
             foreach ($this->_headers as $key => $value) {
                 $headers[] = sprintf('%s: %s', $key, $value);
             }
+
             return $headers;
         } else {
             return $this->_headers;
@@ -169,7 +169,7 @@ class Request
 
     public function getUrl()
     {
-        return Constants::TIKTOK_API[$this->_base] . $this->_endpoint;
+        return Constants::TIKTOK_API[$this->_base].$this->_endpoint;
     }
 
     public function setEncoding(
@@ -227,6 +227,7 @@ class Request
         if ($this->getDisableDefaultParams() === false) {
             $this->addDefaultParams();
         }
+
         return $this->_http->sendRequest($this);
     }
 }

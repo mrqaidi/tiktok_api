@@ -7,7 +7,6 @@ use Ramsey\Uuid\Uuid;
 class HttpInterface
 {
     protected $_parent;
-    protected $headers;
 
     public function __construct(
         $parent)
@@ -15,7 +14,7 @@ class HttpInterface
         $this->_parent = $parent;
     }
 
-    protected function getGorgonAndKronosHeaders(
+    protected function _getGorgonAndKronosHeaders(
         $request)
     {
         $result = $this->_parent->request()
@@ -45,8 +44,8 @@ class HttpInterface
         if ($request->getPosts() !== null && !$request->getSkip()) {
             $request->addHeader('Cookies', 'store-idc=maliva; store-country-code=us');
             $request->addHeader('X-SS-STUB', strtoupper(md5(http_build_query($request->getPosts()))));
-            $this->getGorgonAndKronosHeaders($request);
-            curl_setopt($ch, CURLOPT_URL, $request->getUrl() . '?' . urldecode(http_build_query($request->getParams())));
+            $this->_getGorgonAndKronosHeaders($request);
+            curl_setopt($ch, CURLOPT_URL, $request->getUrl().'?'.urldecode(http_build_query($request->getParams())));
         } else {
             curl_setopt($ch, CURLOPT_URL, $request->getUrl());
         }
@@ -117,9 +116,9 @@ class HttpInterface
     {
         $method = $request->getPosts() === null ? 'GET' : 'POST';
         if ($request->getParams() !== null) {
-            echo "\033[1;33;m".strtoupper($method).": \033[0m". $request->getUrl() . '?' . urldecode(http_build_query($request->getParams())) ."\n";
+            echo "\033[1;33;m".strtoupper($method).": \033[0m".$request->getUrl().'?'.urldecode(http_build_query($request->getParams()))."\n";
         } else {
-            echo "\033[1;33;m".strtoupper($method).": \033[0m". $request->getUrl()."\n";
+            echo "\033[1;33;m".strtoupper($method).": \033[0m".$request->getUrl()."\n";
         }
 
         if ($request->getPosts() !== null) {
