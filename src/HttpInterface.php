@@ -18,7 +18,7 @@ class HttpInterface
         $request)
     {
         $result = $this->_parent->request()
-            ->setBase(2)
+            ->setBase(3)
             ->skip(true)
             ->setDisableDefaultParams(true)
             ->addPost('url', $request->getUrl())
@@ -63,7 +63,7 @@ class HttpInterface
             curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getBody());
         }
 
-        curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);

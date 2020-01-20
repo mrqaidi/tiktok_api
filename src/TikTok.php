@@ -33,6 +33,27 @@ class TikTok
         }
     }
 
+    public function getCaptcha(
+        $code)
+    {
+        $response = $this->request('/get')
+            ->setBase(2)
+            ->skip(true)
+            ->setDisableDefaultParams(true)
+            ->addParam('aid', 1233)
+            ->addParam('lang', 'en')
+            ->addParam('app_name', 'musical_ly')
+            ->addParam('iid', $this->settings->get('iid'))
+            ->addParam('vc', Constants::VERSION_CODE)
+            ->addParam('did', $this->settings->get('device_id'))
+            ->addParam('ch', $this->settings->get('googleplay'))
+            ->addParam('os', 0)
+            ->addParam('challenge_code', $code)
+            ->getResponse();
+
+        return new Response\GetCaptchaResponse($response);
+    }
+
     public function loginWithEmail(
         $email,
         $user,
@@ -51,7 +72,13 @@ class TikTok
             ->addPost('email', Signatures::xorEncrypt($email))
             ->getResponse();
 
-        return new Response\LoginResponse($response);
+        $loginResponse = new Response\LoginResponse($response);
+
+        if ($loginResponse->getData()->getErrorCode() === 1105) {
+            $this->getCaptcha($loginResponse->getData()->getErrorCode());
+        }
+
+        return $loginResponse;
     }
 
     public function like(
@@ -143,11 +170,5 @@ class TikTok
         $token)
     {
         $this->http->setTikTokToken($token);
-    }
-
-    public function setUser(
-        $username)
-    {
-        $this->settings->setUser($username);
     }
 }
