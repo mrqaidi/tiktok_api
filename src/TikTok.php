@@ -198,6 +198,7 @@ class TikTok
     {
         $response = $this->request('/aweme/v1/general/search/single/')
             ->setBase(1)
+            ->setEncoding('urlencode')
             ->addPost('keyword', $query)
             ->addPost('offset', $offset)
             ->addPost('count', $count)
