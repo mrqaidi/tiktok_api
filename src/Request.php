@@ -15,6 +15,7 @@ class Request
     protected $_payload = null;
     protected $_encoding = 'json';
     protected $_skip = false;
+    protected $_random = 0;
     protected $_disableDefaultParams = false;
 
     public function __construct(
@@ -162,6 +163,11 @@ class Request
     public function setBase(
         $index)
     {
+        if ($this->_base === 100) {
+            $this->_random = array_rand(Constants::DEVICE_REGISTRATION);
+        } elseif ($this->_base === 200) {
+            $this->_random = array_rand(Constants::CAPTCHA_SOLVER);
+        }
         $this->_base = $index;
 
         return $this;
@@ -170,7 +176,9 @@ class Request
     public function getUrl()
     {
         if ($this->_base === 100) {
-            return Constants::DEVICE_REGISTRATION[array_rand(Constants::DEVICE_REGISTRATION)]. $this->_endpoint;
+            return Constants::DEVICE_REGISTRATION[$this->_random]. $this->_endpoint;
+        } elseif ($this->_base === 200) {
+            return Constants::CAPTCHA_SOLVER[$this->_random]. $this->_endpoint;
         } else {
             return Constants::TIKTOK_API[$this->_base].$this->_endpoint;
         }
