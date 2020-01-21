@@ -77,6 +77,51 @@ class TikTok
         return new Response\GetCaptchaResponse($response);
     }
 
+    public function solveCaptcha(
+        $id,
+        $url1,
+        $url2,
+        $posY)
+    {
+        $response = $this->request('/captcha')
+            ->setBase(200)
+            ->skip(true)
+            ->setDisableDefaultParams(true)
+            ->addPost('url1', $url1)
+            ->addPost('url2', $url2)
+            ->addPost('id', $id)
+            ->addPost('tip_y', $posY)
+            ->addPost('authkey', $this->authKey)
+            ->getResponse();
+
+        return new Response\SolveCaptchaResponse($response);
+    }
+
+    public function verifyCaptcha(
+        $captchaSolution)
+    {
+        $response = $this->request('/verify')
+            ->setBase(2)
+            ->skip(true)
+            ->setDisableDefaultParams(true)
+            ->addParam('aid', 1233)
+            ->addParam('lang', 'en')
+            ->addParam('app_name', 'musical_ly')
+            ->addParam('iid', $this->settings->get('iid'))
+            ->addParam('vc', Constants::VERSION_CODE)
+            ->addParam('did', $this->settings->get('device_id'))
+            ->addParam('ch', 'googleplay')
+            ->addParam('os', 0)
+            ->addParam('challenge_code', '1105')
+            ->addPost('modified_img_width', $captchaSolution->getModifiedImgWidth())
+            ->addPost('id', $captchaSolution->getId())
+            ->addPost('mode', 'slide')
+            ->addPost('reply', $captchaSolution->getReply())
+            ->getResponse();
+
+        return new Response\GetCaptchaResponse($response);
+    }
+
     public function loginWithEmail(
         $email,
         $user,
@@ -95,13 +140,7 @@ class TikTok
             ->addPost('email', Signatures::xorEncrypt($email))
             ->getResponse();
 
-        $loginResponse = new Response\LoginResponse($response);
-
-        if ($loginResponse->getData()->getErrorCode() === 1105) {
-            $this->getCaptcha($loginResponse->getData()->getErrorCode());
-        }
-
-        return $loginResponse;
+        return new Response\LoginResponse($response);
     }
 
     public function like(
