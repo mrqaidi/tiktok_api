@@ -176,9 +176,9 @@ class Request
     public function getUrl()
     {
         if ($this->_base === 100) {
-            return Constants::DEVICE_REGISTRATION[$this->_random]. $this->_endpoint;
+            return Constants::DEVICE_REGISTRATION[$this->_random].$this->_endpoint;
         } elseif ($this->_base === 200) {
-            return Constants::CAPTCHA_SOLVER[$this->_random]. $this->_endpoint;
+            return Constants::CAPTCHA_SOLVER[$this->_random].$this->_endpoint;
         } else {
             return Constants::TIKTOK_API[$this->_base].$this->_endpoint;
         }

@@ -28,7 +28,7 @@ class HttpInterface
             ->getResponse();
 
         if (isset($result['status'])) {
-            throw new AuthkeyException("Missing or invalid auth key.");
+            throw new AuthkeyException('Missing or invalid auth key.');
         }
 
         $request->addHeader('X-Gorgon', $result['X-Gorgon']);
@@ -47,7 +47,7 @@ class HttpInterface
     {
         $ch = curl_init();
         if (!$request->getSkip()) {
-            if (file_exists($this->_parent->settings->getUsernameStoragePath() . '/cookies.dat')) {
+            if (file_exists($this->_parent->settings->getUsernameStoragePath().'/cookies.dat')) {
                 $request->addHeader('Cookies', $this->_getCookieString());
             }
             if ($request->getPosts() !== null) {
@@ -78,8 +78,8 @@ class HttpInterface
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        @curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
-        @curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath() . '/cookies.dat');
+        @curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath().'/cookies.dat');
+        @curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath().'/cookies.dat');
         //curl_setopt($ch, CURLOPT_VERBOSE, true);
         $response = curl_exec($ch);
         curl_close($ch);
@@ -125,13 +125,11 @@ class HttpInterface
 
     protected function _getCookieString()
     {
-
-        $lines = explode(PHP_EOL, file_get_contents($this->_parent->settings->getUsernameStoragePath() . '/cookies.dat'));
+        $lines = explode(PHP_EOL, file_get_contents($this->_parent->settings->getUsernameStoragePath().'/cookies.dat'));
 
         $cookieString = '';
         foreach ($lines as $line) {
-
-            $cookie = array();
+            $cookie = [];
 
             // detect httponly cookies and remove #HttpOnly prefix
             if (substr($line, 0, 10) == '#HttpOnly_') {
@@ -142,8 +140,7 @@ class HttpInterface
             }
 
             // we only care for valid cookie def lines
-            if( strlen( $line ) > 0 && $line[0] != '#' && substr_count($line, "\t") == 6) {
-
+            if (strlen($line) > 0 && $line[0] != '#' && substr_count($line, "\t") == 6) {
                 // get tokens in an array
                 $tokens = explode("\t", $line);
 

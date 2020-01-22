@@ -2,8 +2,6 @@
 
 namespace TikTokAPI;
 
-use Ramsey\Uuid\Uuid;
-
 class TikTok
 {
     public $debug;
