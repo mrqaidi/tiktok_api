@@ -213,6 +213,24 @@ class TikTok
         return new Response\SearchResponse($response);
     }
 
+    public function getActivity(
+        $maxTime = 0,
+        $minTime = 0,
+        $count = 20,
+        $noticeGroup = 36)
+    {
+        $response = $this->request('/aweme/v1/notice/list/message/')
+            ->setBase(1)
+            ->addParam('max_time', $maxTime)
+            ->addParam('min_time', $minTime)
+            ->addParam('count', $count)
+            ->addParam('notice_group', $noticeGroup)
+            ->addParam('is_mark_read', 1)
+            ->getResponse();
+
+        return new Response\ActivityResponse($response);
+    }
+
     /**
      * Create a custom API request.
      *
