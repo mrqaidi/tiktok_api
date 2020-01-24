@@ -28,7 +28,7 @@ class HttpInterface
             ->getResponse();
 
         if (isset($result['status'])) {
-            throw new AuthkeyException('Missing or invalid auth key.');
+            throw new Exception\AuthkeyException('Missing or invalid auth key.');
         }
 
         $request->addHeader('X-Gorgon', $result['X-Gorgon']);
