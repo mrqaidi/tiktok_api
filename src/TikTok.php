@@ -244,10 +244,4 @@ class TikTok
     {
         return new Request($this, $endpoint);
     }
-
-    public function setTikTokToken(
-        $token)
-    {
-        $this->http->setTikTokToken($token);
-    }
 }

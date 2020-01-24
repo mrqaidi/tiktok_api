@@ -35,12 +35,6 @@ class HttpInterface
         $request->addHeader('X-Khronos', $result['X-Khronos']);
     }
 
-    public function setTikTokToken(
-        $token)
-    {
-        $this->TikTokAPIHeaders[] = 'x-Tt-Token: '.$token;
-    }
-
     public function sendRequest(
         $request,
         $skip = false)
@@ -63,6 +57,10 @@ class HttpInterface
             }
         }
 
+        if ($this->_parent->settings->get('tttoken') !== null) {
+            $request->addHeader('X-Tt-Token', $this->_parent->settings->get('tttoken'));
+        }
+
         if ($request->getPosts() !== null) {
             if ($request->getEncoding() === 'json') {
                 $request->addHeader('Content-Type', 'application/json');
@@ -74,6 +72,7 @@ class HttpInterface
             curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getBody());
         }
 
+        curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip, deflate');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -82,13 +81,24 @@ class HttpInterface
         @curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath().'/cookies.dat');
         //curl_setopt($ch, CURLOPT_VERBOSE, true);
         $response = curl_exec($ch);
+        $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headers = substr($response, 0, $headerSize);
+        $body = substr($response, $headerSize);
         curl_close($ch);
 
-        if ($this->_parent->debug === true) {
-            $this->debug($request, $response);
+        if ($this->_parent->settings->get('tttoken') === null || $request->getUrl() === Constants::TIKTOK_API[1].'/passport/user/login/') {
+            $re = '/X-Tt-Token: (\w+)/m';
+            preg_match_all($re, $headers, $matches, PREG_SET_ORDER, 0);
+            if (!empty($matches)) {
+                $this->_parent->settings->set('tttoken', $matches[0][1]);
+            }
         }
 
-        return json_decode($response, true);
+        if ($this->_parent->debug === true) {
+            $this->debug($request, $body);
+        }
+
+        return json_decode($body, true);
     }
 
     public function buildMultiPart(
