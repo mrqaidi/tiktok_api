@@ -67,7 +67,7 @@ class TikTok
             ->addParam('iid', $this->settings->get('iid'))
             ->addParam('vc', Constants::VERSION_CODE)
             ->addParam('did', $this->settings->get('device_id'))
-            ->addParam('ch', $this->settings->get('googleplay'))
+            ->addParam('ch', Constants::CHANNEL)
             ->addParam('os', 0)
             ->addParam('challenge_code', $code)
             ->getResponse();
