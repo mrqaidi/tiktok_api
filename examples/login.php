@@ -22,24 +22,38 @@ $deviceInfo = [
 /////////////////////////////////
 
 $tiktok = new \TikTokAPI\TikTok($debug);
-
 $tiktok->setAuthKey($authKey);
 
-$loginResponse = $tiktok->loginWithEmail($email, $username, $password, $deviceInfo);
+try {
+    $loginResponse = $tiktok->login($email, $username, $password, $deviceInfo);
+} catch(\TikTokAPI\Exception\AuthkeyException $e) {
+    echo 'Invalid or expired auth key.';
+    exit();
+}
 
 if (!$loginResponse->isOk()) {
     if ($loginResponse->getData()->getErrorCode() === 1105) {
         $captchaData = $tiktok->getCaptcha($loginResponse->getData()->getErrorCode());
+        $captchaSolution = $tiktok->solveCaptcha($captchaData->getData()->getId(),
+                              $captchaData->getData()->getQuestion()->getUrl1(),
+                              $captchaData->getData()->getQuestion()->getUrl2(),
+                              $captchaData->getData()->getQuestion()->getTipY());
+
+        sleep(3);
+        $tiktok->verifyCaptcha($captchaSolution);
+    } elseif ($loginResponse->getData()->getErrorCode() === 1009) {
+        echo $loginResponse->getData()->getDescription();
+        exit();
     }
 }
 
-$captchaSolution = $tiktok->solveCaptcha($captchaData->getData()->getId(),
-                      $captchaData->getData()->getQuestion()->getUrl1(),
-                      $captchaData->getData()->getQuestion()->getUrl2(),
-                      $captchaData->getData()->getQuestion()->getTipY());
+$loginResponse = $tiktok->login($email, $username, $password, $deviceInfo);
 
-$tiktok->verifyCaptcha($captchaSolution);
-
-$loginResponse = $tiktok->loginWithEmail($email, $username, $password, $deviceInfo);
+if (!$loginResponse->isOk()) {
+    if ($loginResponse->getData()->getErrorCode() === 1009 || $loginResponse->getData()->getErrorCode() === 7) {
+        echo $loginResponse->getData()->getDescription();
+        exit();
+    }
+}
 
 $tiktok->getActivity();
