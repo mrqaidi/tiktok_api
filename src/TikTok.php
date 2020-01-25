@@ -120,23 +120,30 @@ class TikTok
         return new Response\GetCaptchaResponse($response);
     }
 
-    public function loginWithEmail(
+    public function login(
         $email,
         $user,
         $password,
-        $deviceInfo = null)
+        $deviceInfo = null,
+        $emailLogin = true)
     {
         $this->setUser($user, $deviceInfo);
 
-        $response = $this->request('/passport/user/login/')
+        $request = $this->request('/passport/user/login/')
             ->setBase(1)
             ->setEncoding('urlencode')
             ->addPost('password', Signatures::xorEncrypt($password))
             ->addPost('account_sdk_source', 'app')
             ->addPost('mix_mode', 1)
-            ->addPost('multi_login', 1)
-            ->addPost('email', Signatures::xorEncrypt($email))
-            ->getResponse();
+            ->addPost('multi_login', 1);
+
+        if ($emailLogin) {
+            $response = $request->addPost('email', Signatures::xorEncrypt($email))
+                                ->getResponse();
+        } else {
+            $response = $request->addPost('username', Signatures::xorEncrypt($user))
+                                ->getResponse();
+        }
 
         return new Response\LoginResponse($response);
     }
