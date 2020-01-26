@@ -30,7 +30,6 @@ class HttpInterface
         if (isset($result['status'])) {
             throw new Exception\AuthkeyException('Missing or invalid auth key.');
         }
-
         $request->addHeader('X-Gorgon', $result['X-Gorgon']);
         $request->addHeader('X-Khronos', $result['X-Khronos']);
     }
@@ -58,7 +57,7 @@ class HttpInterface
         }
 
         if ($this->_parent->settings->get('tttoken') !== null) {
-            $request->addHeader('X-Tt-Token', $this->_parent->settings->get('tttoken'));
+            $request->addHeader('x-tt-token', $this->_parent->settings->get('tttoken'));
         }
 
         if ($request->getPosts() !== null) {
@@ -70,6 +69,8 @@ class HttpInterface
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_HTTPHEADER, $request->getHeaders());
             curl_setopt($ch, CURLOPT_POSTFIELDS, $request->getBody());
+        } else {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $request->getHeaders());
         }
 
         curl_setopt($ch, CURLOPT_HEADER, true);
