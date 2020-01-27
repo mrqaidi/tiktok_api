@@ -163,12 +163,12 @@ class Request
     public function setBase(
         $index)
     {
+        $this->_base = $index;
         if ($this->_base === 100) {
             $this->_random = array_rand(Constants::DEVICE_REGISTRATION);
         } elseif ($this->_base === 200) {
             $this->_random = array_rand(Constants::CAPTCHA_SOLVER);
         }
-        $this->_base = $index;
 
         return $this;
     }
