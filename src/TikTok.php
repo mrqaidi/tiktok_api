@@ -49,6 +49,7 @@ class TikTok
             ->skip(true)
             ->setBase(100)
             ->setDisableDefaultParams(true)
+            ->addPost('authkey', $this->authKey)
             ->getResponse();
 
         return new Response\DeviceRegistrationIdsResponse($response);
@@ -161,19 +162,35 @@ class TikTok
     }
 
     public function follow(
-        $itemId,
-        $secUserId)
+        $secUserId,
+        $channelId = 3)
     {
         $response = $this->request('/aweme/v1/commit/follow/user/')
             ->setBase(1)
-            ->addParam('item_id', $itemId)
-            ->addParam('sec_user_id', $secUserId)
-            ->addParam('from', '13') // needs logic yet.
-            ->addParam('from_pre', '-1')
+            ->addParam('from', 0)
+            ->addParam('from_pre', -1)
             ->addParam('type', 1)
+            ->addParam('channel_id', $channelId)
+            ->addParam('sec_user_id', $secUserId)
             ->getResponse();
 
-        return new Response\FollowResponse($response);
+        return $response;
+    }
+
+    public function getUserProfile(
+        $userId,
+        $secUserId)
+    {
+        $response = $this->request('/aweme/v1/user/')
+            ->setBase(1)
+            ->addParam('allow_sell_data', 0)
+            ->addParam('content_language', '')
+            ->addParam('user_id', $userId)
+            ->addParam('address_book_access', 0)
+            ->addParam('sec_user_id', $secUserId)
+            ->getResponse();
+
+        return $response;
     }
 
     public function comment(
