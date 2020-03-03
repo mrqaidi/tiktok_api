@@ -3,9 +3,13 @@
 
 **Note:** Since many of you are asking me via email. Yes, I have already reversed everything. I will be gradually pushing code.
 
-### Currently available
+### TikTok Service
 
-The following is currently available for researchers and developers:
+If you are a student or a security researcher you will have limited free access to the TikTok service. Send me an email with all details and your main usages of the API and I will provide you an auth key.
+
+For any individual or company that is interested in using the API in a large scale, you should send me an email providing details about how are you planning to use the API and the estimated requests on a monthly basis.
+
+The service includes:
 
 - Device registration for registering `device_id`, `install_id` also known as `iid` and `openudid`.
 - `X-Gorgon` and `X-Khronos`.
