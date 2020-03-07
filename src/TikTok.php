@@ -121,6 +121,18 @@ class TikTok
         return new Response\GetCaptchaResponse($response);
     }
 
+    public function checkEmail(
+        $email)
+    {
+        return $this->request('/passport/user/check_email_registered')
+            ->setBase(1)
+            ->setEncoding('urlencode')
+            ->addPost('mix_mode', 1)
+            ->addPost('email', Signatures::xorEncrypt($email))
+            ->addPost('account_sdk_source', 'app')
+            ->getResponse();
+    }
+
     public function login(
         $email,
         $user,
