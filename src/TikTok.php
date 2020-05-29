@@ -1,14 +1,63 @@
 <?php
 
 namespace TikTokAPI;
-
+/**
+ * TikTok's Private API.
+ *
+ * TERMS OF USE:
+ * - This code is in no way affiliated with, authorized, maintained, sponsored
+ *   or endorsed by TikTok or any of its affiliates or subsidiaries. This is
+ *   an independent and unofficial API. Use at your own risk.
+ * - We do NOT support or tolerate anyone who wants to use this API to send spam
+ *   or commit other online crimes.
+ * - You will NOT use this API for marketing or other abusive purposes (spam,
+ *   botting, harassment, massive bulk messaging...).
+ *
+ * @author mgp25: Founder, Reversing, Project Leader (https://github.com/mgp25)
+ */
 class TikTok
 {
+    /**
+     * Debug.
+     *
+     * @var bool
+     */
     public $debug;
+
+    /**
+     * Storage path.
+     *
+     * @var string
+     */
     public $storagePath;
+
+    /**
+     * Settings interface.
+     *
+     * @var \InstagramAPI\Settings
+     */
     public $settings;
+
+    /**
+     * Auth key.
+     *
+     * @var string
+     */
     public $authKey = '';
 
+    /**
+     * Proxy.
+     *
+     * @var string
+     */
+    public $proxy = null;
+
+    /**
+     * TikTok API constructor.
+     *
+     * @param bool  $debug         Enables debug mode.
+     * @param array $storageConfig Storage config.
+     */
     public function __construct(
         $debug = false,
         $storagePath = null)
@@ -17,13 +66,35 @@ class TikTok
         $this->settings = new Settings($storagePath);
     }
 
+    /**
+     * Sets proxy.
+     *
+     * @param string $proxy Proxy.
+     */
+    public function setProxy(
+        $proxy)
+    {
+        $this->proxy = $proxy;
+    }
+
+    /**
+     * Sets the active user.
+     *
+     * @param string $authKey Private API service auth key.
+     */
     public function setAuthKey(
         $authKey)
     {
         $this->authKey = $authKey;
     }
 
-    public function setUser(
+    /**
+     * Sets the active user.
+     *
+     * @param string $username   Username.
+     * @param array  $deviceInfo Device information: device_id, openudid and iid.
+     */
+    protected function _setUser(
         $user,
         $deviceInfo = null)
     {
@@ -43,6 +114,15 @@ class TikTok
         }
     }
 
+    /**
+     * Get device registration IDs.
+     *
+     * NOTE: This data is obtained from the private subscription.
+     *
+     * @throws \TikTokAPI\Exception\AuthkeyException
+     *
+     * @return \TikTokAPI\Response\DeviceRegistrationIdsResponse
+     */
     public function getDeviceRegistrationIds()
     {
         $response = $this->request('/devices')
@@ -55,6 +135,15 @@ class TikTok
         return new Response\DeviceRegistrationIdsResponse($response);
     }
 
+    /**
+     * Get captcha.
+     *
+     * @param string $code Error code from login response.
+     *
+     * @throws Exception
+     *
+     * @return \TikTokAPI\Response\GetCaptchaResponse
+     */
     public function getCaptcha(
         $code)
     {
@@ -76,6 +165,18 @@ class TikTok
         return new Response\GetCaptchaResponse($response);
     }
 
+    /**
+     * Solve captcha.
+     *
+     * NOTE: This uses the private API subscription to solve captchas.
+     *
+     * @param string $id   Captcha ID.
+     * @param string $url1 Captcha URL 1.
+     * @param string $url2 Captcha URL 2.
+     * @param string $posY Y Position.
+     *
+     * @return \TikTokAPI\Response\SolveCaptchaResponse
+     */
     public function solveCaptcha(
         $id,
         $url1,
@@ -96,6 +197,13 @@ class TikTok
         return new Response\SolveCaptchaResponse($response);
     }
 
+    /**
+     * Verify captcha solution.
+     *
+     * @param SolveCaptchaResponse $captchaSolution Captcha solution.
+     *
+     * @return \TikTokAPI\Response\GetCaptchaResponse
+     */
     public function verifyCaptcha(
         $captchaSolution)
     {
@@ -121,6 +229,13 @@ class TikTok
         return new Response\GetCaptchaResponse($response);
     }
 
+    /**
+     * Check if email is registered.
+     *
+     * @param string $email Email.
+     *
+     * @return \TikTokAPI\Response\CheckEmailResponse
+     */
     public function checkEmail(
         $email)
     {
@@ -133,14 +248,25 @@ class TikTok
             ->getResponse();
     }
 
+    /**
+     * Login.
+     *
+     * @param string $username   It can be either a username, email or phone number.
+     * @param string $password   The password of the account.
+     * @param array  $deviceInfo Device information: device_id, openudid and iid.
+     *
+     * @return \TikTokAPI\Response\LoginResponse|null
+     */
     public function login(
-        $email,
-        $user,
+        $username,
         $password,
-        $deviceInfo = null,
-        $emailLogin = true)
+        $deviceInfo = null)
     {
-        $this->setUser($user, $deviceInfo);
+        $this->_setUser($username, $deviceInfo);
+
+        if ($this->settings->get('tttoken') !== null) {
+            return;
+        }
 
         $request = $this->request('/passport/user/login/')
             ->setBase(1)
@@ -150,17 +276,25 @@ class TikTok
             ->addPost('mix_mode', 1)
             ->addPost('multi_login', 1);
 
-        if ($emailLogin) {
-            $response = $request->addPost('email', Signatures::xorEncrypt($email))
+        if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            $response = $request->addPost('email', Signatures::xorEncrypt($username))
                                 ->getResponse();
         } else {
-            $response = $request->addPost('username', Signatures::xorEncrypt($user))
+            $response = $request->addPost('username', Signatures::xorEncrypt($username))
                                 ->getResponse();
         }
 
         return new Response\LoginResponse($response);
     }
 
+    /**
+     * Like media.
+     *
+     * @param string $media   ID  Media ID. Aweme ID.
+     * @param mixed  $mediaId
+     *
+     * @return \TikTokAPI\Response\LikeResponse
+     */
     public function like(
         $mediaId)
     {
@@ -173,6 +307,14 @@ class TikTok
         return new Response\LikeResponse($response);
     }
 
+    /**
+     * Follow user.
+     *
+     * @param string $secUserId Sec user ID.
+     * @param int    $channelId For users, channel ID is always 3.
+     *
+     * @return \TikTokAPI\Response\FollowResponse
+     */
     public function follow(
         $secUserId,
         $channelId = 3)
@@ -189,6 +331,13 @@ class TikTok
         return $response;
     }
 
+    /**
+     * Get user profile information.
+     *
+     * @param string $secUserId Sec user ID.
+     *
+     * @return \TikTokAPI\Response\ProfileResponse
+     */
     public function getUserProfile(
         $userId,
         $secUserId)
@@ -205,6 +354,11 @@ class TikTok
         return $response;
     }
 
+    /**
+     * Get self profile information.
+     *
+     * @return \TikTokAPI\Response\ProfileResponse
+     */
     public function comment(
         $mediaId,
         $text)
@@ -225,6 +379,17 @@ class TikTok
         return new Response\CommentResponse($response);
     }
 
+    /**
+     * Search.
+     *
+     * This searches by a query in 'Top' section.
+     *
+     * @param string $query  The query.
+     * @param int    $offset Offset. User for pagination.
+     * @param int    $count  Count. Number of items returned by TikTok.
+     *
+     * @return \TikTokAPI\Response\SearchResponse
+     */
     public function search(
         $query,
         $offset = 0,
@@ -247,6 +412,16 @@ class TikTok
         return new Response\SearchResponse($response);
     }
 
+    /**
+     * Get account activity.
+     *
+     * @param int $maxTime     Max time. Timestamp for filtering activity.
+     * @param int $minTime     Min time. Timestamp for filtering activity.
+     * @param int $count       Count. Number of items returned by TikTok.
+     * @param int $noticeGroup Notice gorup.
+     *
+     * @return \TikTokAPI\Response\ActivityResponse
+     */
     public function getActivity(
         $maxTime = 0,
         $minTime = 0,
@@ -273,7 +448,7 @@ class TikTok
      *
      * @param string $endpoint
      *
-     * @return \InstagramAPI\Request
+     * @return \TikTokAPI\Request
      */
     public function request(
         $endpoint = '')
