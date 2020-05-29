@@ -5,17 +5,26 @@
 
 ### TikTok Service
 
-If you are a student or a security researcher you will have limited free access to the TikTok service. Send me an email with all details and your main usages of the API and I will provide you an auth key.
+If you are a **student** or a **security researcher** you will have limited free access to the TikTok service. Send me an email with all details and your main usages of the API and I will provide you an auth key.
 
 For any individual or company that is interested in using the API in a large scale, you should send me an email providing details about how are you planning to use the API and the estimated requests on a monthly basis.
 
-The service includes:
+The student plan contains:
 
 - Device registration for registering `device_id`, `install_id` also known as `iid` and `openudid`.
 - `X-Gorgon` and `X-Khronos`.
-- Captcha solver
+- Captcha solver.
+
+Business and security researchers plan contains:
+
+- Private API with more functionalities and documentation.
+- Device registration for registering `device_id`, `install_id` also known as `iid` and `openudid`.
+- `X-Gorgon` and `X-Khronos`.
+- Captcha solver.
 
 If you want to contact with me: me [ at ] mgp25 [ dot ] com
+
+**NOTE:** I receive a lot of emails daily, please be patient. 
 
 Best regards,
 
