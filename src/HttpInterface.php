@@ -80,6 +80,9 @@ class HttpInterface
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         @curl_setopt($ch, CURLOPT_COOKIEJAR, $this->_parent->settings->getUsernameStoragePath().'/cookies.dat');
         @curl_setopt($ch, CURLOPT_COOKIEFILE, $this->_parent->settings->getUsernameStoragePath().'/cookies.dat');
+        if ($this->_parent->proxy !== null) {
+            curl_setopt($ch, CURLOPT_PROXY, $this->_parent->proxy);
+        }
         //curl_setopt($ch, CURLOPT_VERBOSE, true);
         $response = curl_exec($ch);
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -88,7 +91,7 @@ class HttpInterface
         curl_close($ch);
 
         if ($this->_parent->settings->get('tttoken') === null || $request->getUrl() === Constants::TIKTOK_API[1].'/passport/user/login/') {
-            $re = '/X-Tt-Token: (\w+)/m';
+            $re = '/X-Tt-Token: (\w+)/mi';
             preg_match_all($re, $headers, $matches, PREG_SET_ORDER, 0);
             if (!empty($matches)) {
                 $this->_parent->settings->set('tttoken', $matches[0][1]);
